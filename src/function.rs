@@ -1,3 +1,4 @@
+use std::ffi::CStr;
 use std::os::raw::c_int;
 use std::ptr;
 
@@ -205,10 +206,42 @@ impl<'lua> Function<'lua> {
             Ok(Function(lua.pop_ref()))
         }
     }
+
+    /// Returns source and line number information about the function.
+    ///
+    /// Corresponds to the `>S` what mask for `lua_getinfo` when applied
+    /// to the function.
+    pub fn source(&self) -> FunctionSource {
+        let lua = self.0.lua;
+        unsafe {
+            let mut ar: ffi::lua_Debug = std::mem::zeroed();
+            lua.push_ref(&self.0);
+            mlua_assert!(
+                ffi::lua_getinfo(lua.state, cstr!(">S"), &mut ar as *mut ffi::lua_Debug) != 0,
+                "lua_getinfo failed with `>S`"
+            );
+            FunctionSource {
+                source: String::from_utf8_lossy(CStr::from_ptr(ar.source as *const i8).to_bytes()).into_owned(),
+                short_src: String::from_utf8_lossy(CStr::from_ptr(&ar.short_src as *const i8).to_bytes()).into_owned(),
+                line_defined: ar.linedefined as i32,
+                last_line_defined: ar.lastlinedefined as i32,
+                what: String::from_utf8_lossy(CStr::from_ptr(ar.what as *const i8).to_bytes()).into_owned(),
+            }
+        }
+    }
 }
 
 impl<'lua> PartialEq for Function<'lua> {
     fn eq(&self, other: &Self) -> bool {
         self.0 == other.0
     }
+}
+
+#[derive(Clone, Debug)]
+pub struct FunctionSource {
+    pub source: String,
+    pub short_src: String,
+    pub line_defined: i32,
+    pub last_line_defined: i32,
+    pub what: String,
 }

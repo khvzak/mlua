@@ -79,7 +79,7 @@ mod value;
 pub use crate::ffi::lua_State;
 
 pub use crate::error::{Error, ExternalError, ExternalResult, Result};
-pub use crate::function::Function;
+pub use crate::function::{Function, FunctionSource};
 pub use crate::hook::{Debug, DebugNames, DebugSource, DebugStack, HookTriggers};
 pub use crate::lua::{Chunk, GCMode, Lua};
 pub use crate::multi::Variadic;
