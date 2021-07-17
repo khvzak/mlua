@@ -31,6 +31,12 @@ impl<'lua> FromLua<'lua> for Value<'lua> {
     }
 }
 
+impl<'lua> ToLua<'lua> for () {
+    fn to_lua(self, _: &'lua Lua) -> Result<Value<'lua>> {
+        Ok(Value::Nil)
+    }
+}
+
 impl<'lua> ToLua<'lua> for String<'lua> {
     fn to_lua(self, _: &'lua Lua) -> Result<Value<'lua>> {
         Ok(Value::String(self))
